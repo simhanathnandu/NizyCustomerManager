@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit2, Trash2, Phone, User, Users, Receipt, FileText, FileSpreadsheet, Download } from 'lucide-react';
-import { collection, onSnapshot, deleteDoc, doc, query, orderBy } from 'firebase/firestore';
+import { collection, onSnapshot, deleteDoc, doc, query, orderBy, getDocs, where, limit } from 'firebase/firestore';
 import { db } from '../firebase/config';
 import CustomerForm from '../components/CustomerForm';
 import Swal from 'sweetalert2';
@@ -84,13 +84,39 @@ export default function Customers() {
         setIsFormOpen(true);
     };
 
-    const handleCreateBill = (customer) => {
-        navigate('/billing', {
-            state: {
-                openAddModal: true,
-                prefillCustomer: customer
+    const handleCreateBill = async (customer) => {
+        try {
+            const q = query(collection(db, 'orders'), where('customerId', '==', customer.id), limit(1));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                // Bill exists, navigate to edit
+                const orderDoc = querySnapshot.docs[0];
+                navigate('/billing', {
+                    state: {
+                        openEditModal: true,
+                        orderId: orderDoc.id
+                    }
+                });
+            } else {
+                // No bill, navigate to create
+                navigate('/billing', {
+                    state: {
+                        openAddModal: true,
+                        prefillCustomer: customer
+                    }
+                });
             }
-        });
+        } catch (error) {
+            console.error("Error checking for existing bills:", error);
+            // Fallback to create if error
+            navigate('/billing', {
+                state: {
+                    openAddModal: true,
+                    prefillCustomer: customer
+                }
+            });
+        }
     };
 
     const handleFormClose = () => {
