@@ -204,10 +204,11 @@ export const generateInvoicePDF = (order) => {
         const tableRows = [];
 
         order.items.forEach(item => {
+            const itemName = item.name || (item.type ? item.type.charAt(0).toUpperCase() + item.type.slice(1) : 'Item');
             tableRows.push([
-                item.type.charAt(0).toUpperCase() + item.type.slice(1),
+                itemName,
                 "Custom Tailored",
-                item.quantity,
+                String(item.quantity),
                 `₹${item.cost}`,
                 `₹${item.quantity * item.cost}`
             ]);
@@ -219,25 +220,44 @@ export const generateInvoicePDF = (order) => {
             startY: 80,
             theme: 'grid',
             headStyles: { fillColor: [60, 60, 60], textColor: 255 },
-            foot: [
-                ['', '', '', 'Total', `₹${order.totalAmount}`],
-                ['', '', '', 'Paid', `₹${order.paidAmount}`],
-                ['', '', '', 'Balance', `₹${order.balanceAmount}`],
-            ],
-            footStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: 'bold' },
             styles: { fontSize: 10, cellPadding: 3 },
         });
 
         const finalY = doc.lastAutoTable.finalY || 150;
 
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+
+        const summaryStartY = finalY + 10;
+        const rightX = pageWidth - 14;
+        const labelX = pageWidth - 60;
+
+        doc.setDrawColor(200, 200, 200);
+        doc.line(labelX - 5, summaryStartY - 5, rightX, summaryStartY - 5);
+
+        doc.text("Total:", labelX, summaryStartY, { align: 'right' });
+        doc.text(`₹${order.totalAmount}`, rightX, summaryStartY, { align: 'right' });
+
+        doc.text("Paid:", labelX, summaryStartY + 7, { align: 'right' });
+        doc.text(`₹${order.paidAmount}`, rightX, summaryStartY + 7, { align: 'right' });
+
+        doc.setFillColor(245, 245, 245);
+        doc.rect(labelX - 55, summaryStartY + 11, 55, 8, 'F');
+
+        doc.setFontSize(12);
+        doc.text("Balance Due:", labelX, summaryStartY + 17, { align: 'right' });
+        doc.text(`₹${order.balanceAmount}`, rightX, summaryStartY + 17, { align: 'right' });
+
+        doc.line(labelX - 5, summaryStartY + 20, rightX, summaryStartY + 20);
+
         doc.setFontSize(10);
         doc.setTextColor(100);
-        doc.text("Thank you for your business!", 14, finalY + 20);
+        doc.text("Thank you for your business!", 14, summaryStartY + 30);
 
         doc.setFontSize(9);
-        doc.text("Terms & Conditions:", 14, finalY + 30);
-        doc.text("1. No refunds on custom stitched items.", 14, finalY + 35);
-        doc.text("2. Please collect items within 30 days of due date.", 14, finalY + 40);
+        doc.text("Terms & Conditions:", 14, summaryStartY + 40);
+        doc.text("1. No refunds on custom stitched items.", 14, summaryStartY + 45);
+        doc.text("2. Please collect items within 30 days of due date.", 14, summaryStartY + 50);
 
         const blob = doc.output('blob');
         saveFile(blob, `Invoice_${order.customerName.replace(/\s+/g, '_')}_${order.id.slice(-6)}.pdf`);

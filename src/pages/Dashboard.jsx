@@ -52,11 +52,11 @@ export default function Dashboard() {
     const StatCard = ({ title, value, icon: Icon, color, bgGradient }) => (
         <div className={`relative overflow-hidden rounded-2xl p-6 shadow-lg bg-white dark:bg-slate-800 border border-gray-100 dark:border-slate-700 group transition-all duration-300 hover:-translate-y-1 hover:shadow-xl`}>
             <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${bgGradient} opacity-10 rounded-bl-full -mr-8 -mt-8 transition-all group-hover:scale-110`}></div>
-            <div className="flex items-center">
-                <div className={`p-3 rounded-xl ${bgGradient} text-white shadow-lg`}>
-                    <Icon className="h-6 w-6" />
+            <div className="flex items-center relative z-10">
+                <div className={`p-3 rounded-xl bg-gradient-to-br ${bgGradient} shadow-lg`}>
+                    <Icon className="h-6 w-6 text-white" />
                 </div>
-                <div className="ml-4 z-10">
+                <div className="ml-4">
                     <h3 className="text-gray-500 dark:text-slate-400 text-sm font-semibold tracking-wide uppercase">{title}</h3>
                     <p className="text-3xl font-extrabold text-gray-900 dark:text-slate-100 mt-1">{loading ? '-' : value}</p>
                 </div>
