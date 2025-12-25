@@ -29,8 +29,14 @@ export default function Billing() {
             }
             setIsFormOpen(true);
             window.history.replaceState({}, document.title);
+        } else if (location.state?.openEditModal && location.state?.orderId && orders.length > 0) {
+            const orderToEdit = orders.find(o => o.id === location.state.orderId);
+            if (orderToEdit) {
+                handleEdit(orderToEdit);
+                window.history.replaceState({}, document.title);
+            }
         }
-    }, [location.state]);
+    }, [location.state, orders]);
 
     useEffect(() => {
         const q = query(collection(db, 'orders'), orderBy('createdAt', 'desc'));
